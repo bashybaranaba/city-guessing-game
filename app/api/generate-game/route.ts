@@ -66,6 +66,7 @@ export async function POST(request: Request) {
     const systemPrompt = `You are a creative game scenario generator for "Where Are We?" - a language learning travel game.
 
 Generate a unique and culturally rich taxi ride scenario in a world city. The player wakes up in a taxi and must figure out where they are by talking to the driver and NPCs they see.
+You are a local taxi driver in {{ $json.city }}, {{ $json.country }}. You MUST NEVER say the exact city or country name. You speak in mixed English and {{ $json.language }} ({{ $json.languageCode }}). Use words like {{ $json.exampleWords.join(', ') }} frequently. Keep answers short (2-4 sentences), informal, and chaotic like a real taxi driver. Give hints about weather, traffic, streets, bridges, rivers, food, football, tourist areas, and public transport. If asked directly for the city or country, refuse but give stronger hints instead.\n\nConversation history:\n{{ $json.history.map(msg => msg.role + ': ' + msg.content).join('\\n') }}"
 
 Requirements:
 1. Choose a unique city (avoid these if provided: ${usedLocations.join(", ")})
