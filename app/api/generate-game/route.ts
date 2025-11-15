@@ -24,9 +24,9 @@ const CharacterSchema = z.object({
     y: z.number(),
   }),
   color: z.string(),
-  mood: z.enum(['happy', 'neutral', 'mysterious', 'excited', 'tired']),
+  mood: z.enum(["happy", "neutral", "mysterious", "excited", "tired"]),
   description: z.string(),
-  role: z.enum(['chef', 'guide', 'artist', 'local', 'vendor', 'worker']),
+  role: z.enum(["chef", "guide", "artist", "local", "vendor", "worker"]),
 });
 
 const HintSchema = z.object({
@@ -42,7 +42,7 @@ const LocationSchema = z.object({
   characters: z.array(CharacterSchema),
   acceptableAnswers: z.array(z.string()),
   languageDifficulty: z.object({
-    level: z.enum(['Easy', 'Medium', 'Hard']),
+    level: z.enum(["Easy", "Medium", "Hard"]),
     description: z.string(),
   }),
   driverName: z.string(),
@@ -60,7 +60,7 @@ const LocationSchema = z.object({
 export async function POST(request: Request) {
   try {
     const requestBody = await request.json();
-    const { usedLocations = [], difficulty = 'Medium' } = requestBody;
+    const { usedLocations = [], difficulty = "Medium" } = requestBody;
 
     // Build the prompt for generating a game scenario
     const systemPrompt = `You are a creative game scenario generator for "Where Are We?" - a language learning travel game.
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 Generate a unique and culturally rich taxi ride scenario in a world city. The player wakes up in a taxi and must figure out where they are by talking to the driver and NPCs they see.
 
 Requirements:
-1. Choose a unique city (avoid these if provided: ${usedLocations.join(', ')})
+1. Choose a unique city (avoid these if provided: ${usedLocations.join(", ")})
 2. Select an appropriate difficulty level: ${difficulty}
    - Easy: Driver speaks clear English
    - Medium: Driver mixes local language with English
@@ -112,7 +112,9 @@ Make the scenario engaging, educational, and culturally authentic!`;
     const locationData = JSON.parse(content);
 
     // Generate image using DALL-E
-    console.log(`Generating image for ${locationData.city}, ${locationData.country}...`);
+    console.log(
+      `Generating image for ${locationData.city}, ${locationData.country}...`
+    );
 
     const imagePrompt = `A high-quality, photorealistic street view from inside a taxi in ${locationData.city}, ${locationData.country}.
 The scene shows the iconic ${locationData.famousLandmark} visible in the distance through the taxi window.
@@ -127,11 +129,18 @@ Daytime scene with good lighting. Professional photography style, vibrant colors
       quality: "standard", // Use "hd" for higher quality but slower/more expensive
     });
 
-    const imageUrl = imageResponse.data[0].url;
-
-    if (!imageUrl) {
+    // Ensure the response contains data and a valid URL before using it
+    if (
+      !imageResponse ||
+      !imageResponse.data ||
+      imageResponse.data.length === 0 ||
+      !imageResponse.data[0]?.url
+    ) {
+      console.error("Invalid image response:", imageResponse);
       throw new Error("Failed to generate image");
     }
+
+    const imageUrl = imageResponse.data[0].url;
 
     // Add the generated image URL to the location data
     const location = {
@@ -139,7 +148,9 @@ Daytime scene with good lighting. Professional photography style, vibrant colors
       image: imageUrl,
     };
 
-    console.log(`Successfully generated scenario for ${location.city} with image`);
+    console.log(
+      `Successfully generated scenario for ${location.city} with image`
+    );
 
     return new NextResponse(JSON.stringify(location), {
       status: 200,
