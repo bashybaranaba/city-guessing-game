@@ -65,30 +65,54 @@ export async function POST(request: Request) {
     // Build the prompt for generating a game scenario
     const systemPrompt = `You are a creative game scenario generator for "Where Are We?" - a language learning travel game.
 
-Generate a unique and culturally rich taxi ride scenario in a world city. The player wakes up in a taxi and must figure out where they are by talking to the driver and NPCs they see.
-You are a local taxi driver in {{ $json.city }}, {{ $json.country }}. You MUST NEVER say the exact city or country name. You speak in mixed English and {{ $json.language }} ({{ $json.languageCode }}). Use words like {{ $json.exampleWords.join(', ') }} frequently. Keep answers short (2-4 sentences), informal, and chaotic like a real taxi driver. Give hints about weather, traffic, streets, bridges, rivers, food, football, tourist areas, and public transport. If asked directly for the city or country, refuse but give stronger hints instead.\n\nConversation history:\n{{ $json.history.map(msg => msg.role + ': ' + msg.content).join('\\n') }}"
+Generate a unique and culturally rich taxi ride scenario in a world city. The player must figure out where they are through language clues and cultural hints.
 
-Requirements:
+CRITICAL REQUIREMENTS:
+
 1. Choose a unique city (avoid these if provided: ${usedLocations.join(", ")})
-2. Select an appropriate difficulty level: ${difficulty}
-   - Easy: Driver speaks clear English
-   - Medium: Driver mixes local language with English
-   - Hard: Driver speaks mostly local language with minimal English
-3. Create 3 diverse NPCs the player can see through the window, each with:
-   - A unique name fitting the culture
-   - A hint in the local language (with translation and romanization if non-Latin script)
-   - Different positions, colors, moods, and roles
-   - Interesting backstories
-4. The driver should have:
-   - An opening line that sets the scene (mixed language for Medium/Hard)
-   - 3 progressive hints that gradually reveal the location through:
-     * Hint 1: Climate/weather
-     * Hint 2: Local food/culture
-     * Hint 3: Famous landmark
-5. Specify the most famous landmark in the city (e.g., "Eiffel Tower" for Paris, "Burj Khalifa" for Dubai)
-   - This will be used to generate a realistic image of the city
 
-Make the scenario engaging, educational, and culturally authentic!`;
+2. Difficulty level: ${difficulty}
+   - Easy: 30% local language, 70% English in all dialogue
+   - Medium: 60% local language, 40% English in all dialogue
+   - Hard: 85% local language, 15% English in all dialogue
+
+3. Create 3 diverse NPCs visible through the window, each with:
+   - A name fitting the local culture
+   - A hint ENTIRELY in the local language (MUST be authentic local language)
+   - Full translation in English
+   - Romanization if non-Latin script (e.g., Japanese, Korean, Arabic, Hindi, Chinese)
+   - Different positions, colors, moods, and roles
+   - The hint should describe local culture, landmarks, or characteristics WITHOUT mentioning the city/country name
+
+4. Driver characteristics:
+   - Opening line MUST be in mixed language (use actual local phrases)
+   - Opening line should mention generic things like "morning", "traffic", "where to?" without revealing location
+   - Provide full English translation of the opening line
+
+5. Progressive hints (IMPORTANT - these will be revealed one by one when player asks):
+   - Hint 1 (Climate/Weather): Describe weather in mixed language WITHOUT naming the city
+     * Example: "Here it's always humid... 暑い! We get monsoons every summer" (for an Asian city)
+   - Hint 2 (Food/Culture): Describe local food/culture in mixed language WITHOUT naming the city
+     * Example: "Everyone loves our タコス... street food everywhere, muy delicioso!"
+   - Hint 3 (Famous Landmark): Describe a landmark in mixed language WITHOUT directly naming the city
+     * Example: "That big tower... la tour... you can see the whole city from up there!"
+   - All hints MUST have romanization (if non-Latin) and translation
+
+6. Language mixing rules:
+   - Use REAL phrases from the local language (not just random words)
+   - Mix languages naturally within sentences
+   - Include common local expressions, greetings, exclamations
+   - For non-Latin scripts, ALWAYS provide romanization
+
+7. Acceptable answers:
+   - Include: city name, country name, city+country, common nicknames
+   - Example for Paris: ["paris", "france", "paris france", "paris, france"]
+
+8. Famous landmark:
+   - Provide the most iconic landmark (e.g., "Eiffel Tower" for Paris, "Burj Khalifa" for Dubai)
+   - This is for image generation only, NOT for dialogue
+
+REMEMBER: The challenge is language-based. Use MORE local language to make it engaging and educational!`;
 
     const userPrompt = `Generate a ${difficulty} difficulty taxi ride scenario for a unique world city. Make it culturally rich and educational.`;
 

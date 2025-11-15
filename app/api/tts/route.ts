@@ -1,35 +1,77 @@
-import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { getVoiceIdFromLanguages, getVoiceIdForLanguage, DEFAULT_VOICE_ID } from "@/lib/elevenlabs-voices";
 
-const API_KEY = process.env.OPENAI_API_KEY;
-const openai = new OpenAI({
-  apiKey: API_KEY,
-});
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 
 export async function POST(request: Request) {
   try {
     const requestBody = await request.json();
-    const { input } = requestBody;
+    const { input, languageCode, languageCodes } = requestBody;
 
-    // Step 1: Generate audio using OpenAI TTS model
-    const audioResponse = await openai.audio.speech.create({
-      model: "tts-1", // or "tts-1-hd" for higher quality
-      voice: "alloy", // or choose from "echo", "fable", "onyx", "nova", "shimmer"
-      input, // Text input to convert to speech
-    });
+    if (!input) {
+      return new NextResponse("Missing 'input' parameter", { status: 400 });
+    }
 
-    // Step 2: Convert audio response into a Blob (Buffer)
-    const buffer = Buffer.from(await audioResponse.arrayBuffer());
+    if (!ELEVENLABS_API_KEY || ELEVENLABS_API_KEY === 'your_elevenlabs_api_key_here') {
+      return new NextResponse("ElevenLabs API key not configured", { status: 500 });
+    }
 
-    // Step 3: Respond with the audio Blob
+    // Determine the appropriate voice ID based on language
+    let voiceId = DEFAULT_VOICE_ID;
+
+    if (languageCodes && Array.isArray(languageCodes)) {
+      // If multiple languages are provided, pick the first non-English one
+      voiceId = getVoiceIdFromLanguages(languageCodes);
+    } else if (languageCode) {
+      // Single language code
+      voiceId = getVoiceIdForLanguage(languageCode);
+    }
+
+    console.log(`Generating speech with voice ${voiceId} for languages:`, languageCodes || languageCode || 'default');
+
+    // Call ElevenLabs TTS API
+    const response = await fetch(
+      `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'audio/mpeg',
+          'Content-Type': 'application/json',
+          'xi-api-key': ELEVENLABS_API_KEY,
+        },
+        body: JSON.stringify({
+          text: input,
+          model_id: 'eleven_multilingual_v2', // Use multilingual model for best results
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75,
+            style: 0.0,
+            use_speaker_boost: true
+          }
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('ElevenLabs API error:', errorText);
+      throw new Error(`ElevenLabs API returned ${response.status}: ${errorText}`);
+    }
+
+    // Convert response to buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Return audio
     return new NextResponse(buffer, {
       status: 200,
       headers: {
-        "Content-Type": "audio/mpeg", // Specify the MIME type
-        "Content-Disposition": 'inline; filename="speech.mp3"', // Optional: set filename for download
+        "Content-Type": "audio/mpeg",
+        "Content-Disposition": 'inline; filename="speech.mp3"',
       },
     });
   } catch (error: any) {
-    return new NextResponse(error.message, { status: 500 });
+    console.error('TTS error:', error);
+    return new NextResponse(error.message || 'Failed to generate speech', { status: 500 });
   }
 }

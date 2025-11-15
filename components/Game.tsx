@@ -660,7 +660,10 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ input: text }),
+        body: JSON.stringify({
+          input: text,
+          languageCodes: currentLocation?.driverLanguages || ['EN']
+        }),
       });
 
       if (!response.ok) {
@@ -845,7 +848,10 @@ export default function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ input: text }),
+        body: JSON.stringify({
+          input: text,
+          languageCodes: currentLocation?.driverLanguages || ['EN']
+        }),
       });
 
       if (!response.ok) {
