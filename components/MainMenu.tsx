@@ -1,6 +1,14 @@
-import { Button } from './ui/button';
-import { Globe, Play, BookOpen, Settings as SettingsIcon, Map, MapPin, Car } from 'lucide-react';
-import { ImageWithFallback } from './figma/ImageWithFallback';
+import { Button } from "./ui/button";
+import {
+  CarTaxiFront,
+  Play,
+  BookOpen,
+  Settings as SettingsIcon,
+  Map,
+  MapPin,
+  Car,
+} from "lucide-react";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
 
 interface MainMenuProps {
   onPlay: () => void;
@@ -19,10 +27,10 @@ export function MainMenu({ onPlay, onHowToPlay, onSettings }: MainMenuProps) {
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[#111318]/95 via-[#1E2329]/90 to-[#111318]/95" />
-        
-        {/* Taxi Yellow Glow Accents */}
+
+        {/* CarTaxiFront Yellow Glow Accents */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#FFC832]/10 via-transparent to-[#FFC832]/5" />
-        
+
         {/* Decorative Elements */}
         <div className="absolute top-10 left-10 opacity-10">
           <Map className="w-32 h-32 text-[#FFC832]" />
@@ -42,22 +50,22 @@ export function MainMenu({ onPlay, onHowToPlay, onSettings }: MainMenuProps) {
           <div className="flex items-center justify-center mb-6">
             <div className="relative">
               <div className="relative bg-[#FFC832] rounded-full p-6 shadow-2xl">
-                <Globe className="w-16 h-16 text-[#111318]" />
-                <Car className="w-8 h-8 text-[#111318] absolute -bottom-2 -right-2 bg-[#FFC832] rounded-full p-1 border-4 border-[#111318]" />
+                <CarTaxiFront className="w-16 h-16 text-[#111318]" />
               </div>
               <div className="absolute inset-0 bg-[#FFC832]/40 rounded-full blur-3xl animate-pulse" />
             </div>
           </div>
-          
+
           <h1 className="text-6xl md:text-7xl text-[#F5F5F5] mb-4 drop-shadow-2xl tracking-tight">
             Where in the World
           </h1>
           <h2 className="text-5xl md:text-6xl text-[#FFC832] mb-6 drop-shadow-2xl tracking-tight">
             Am I?
           </h2>
-          
+
           <p className="text-xl text-[#F5F5F5]/90 drop-shadow-lg max-w-2xl mx-auto">
-            Wake up, shake off the hangover, chat with your taxi driver and guess where you are.
+            Wake up, shake off the hangover, chat with your taxi driver and
+            guess where you are.
           </p>
         </div>
 
@@ -95,9 +103,7 @@ export function MainMenu({ onPlay, onHowToPlay, onSettings }: MainMenuProps) {
 
         {/* Version/Credits */}
         <div className="mt-12 text-center">
-          <p className="text-sm text-[#F5F5F5]/60">
-            A hangover geography game
-          </p>
+          <p className="text-sm text-[#F5F5F5]/60">A hangover geography game</p>
         </div>
       </div>
 
