@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { X, AlertTriangle } from 'lucide-react';
-import { toast, Toaster } from 'sonner';
-import { GameScene } from './GameScene';
-import { RightPanel } from './RightPanel';
-import { ResultDialog } from './ResultDialog';
-import { RideSummary } from './RideSummary';
-import { MainMenu } from './MainMenu';
-import { HowToPlay } from './HowToPlay';
-import { Settings } from './Settings';
-import { RoundIntro } from './RoundIntro';
-import { CharacterRole } from './CharacterInfoCard';
-import { ChatPanel, ChatMessage } from './ChatPanel';
-import { Button } from './ui/button';
+import { useState, useCallback, useEffect } from "react";
+import { X, AlertTriangle } from "lucide-react";
+import { toast, Toaster } from "sonner";
+import { GameScene } from "./GameScene";
+import { RightPanel } from "./RightPanel";
+import { ResultDialog } from "./ResultDialog";
+import { RideSummary } from "./RideSummary";
+import { MainMenu } from "./MainMenu";
+import { HowToPlay } from "./HowToPlay";
+import { RoundIntro } from "./RoundIntro";
+import { CharacterRole } from "./CharacterInfoCard";
+import { ChatPanel, ChatMessage } from "./ChatPanel";
+import { Button } from "./ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,8 +22,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from './ui/alert-dialog';
-import { useVoiceRecording } from '../hooks/useVoiceRecording';
+} from "./ui/alert-dialog";
+import { useVoiceRecording } from "../hooks/useVoiceRecording";
 
 interface CharacterData {
   id: string;
@@ -34,7 +33,7 @@ interface CharacterData {
   translation?: string;
   position: { x: number; y: number };
   color: string;
-  mood?: 'happy' | 'neutral' | 'mysterious' | 'excited' | 'tired';
+  mood?: "happy" | "neutral" | "mysterious" | "excited" | "tired";
   description?: string;
   role?: CharacterRole;
 }
@@ -47,7 +46,7 @@ interface Location {
   characters: CharacterData[];
   acceptableAnswers: string[];
   languageDifficulty: {
-    level: 'Easy' | 'Medium' | 'Hard';
+    level: "Easy" | "Medium" | "Hard";
     description: string;
   };
   driverName: string;
@@ -65,398 +64,495 @@ interface Location {
 // This will be replaced by LLM-generated scenarios
 const DUMMY_LOCATIONS: Location[] = [
   {
-    name: 'Paris, France',
-    city: 'Paris',
-    country: 'France',
-    image: 'https://images.unsplash.com/photo-1760538569237-a17d05477bef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXJpcyUyMGVpZmZlbCUyMHRvd2VyJTIwc2NlbmV8ZW58MXx8fHwxNzYzMTk5OTk0fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "Paris, France",
+    city: "Paris",
+    country: "France",
+    image:
+      "https://images.unsplash.com/photo-1760538569237-a17d05477bef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwYXJpcyUyMGVpZmZlbCUyMHRvd2VyJTIwc2NlbmV8ZW58MXx8fHwxNzYzMTk5OTk0fDA&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Marie',
+        id: "1",
+        name: "Marie",
         hint: "Bonjour! Je suis pâtissière. Nos croissants sont célèbres dans le monde entier!",
-        translation: "Hello! I'm a pastry chef. Our croissants are world-famous here!",
+        translation:
+          "Hello! I'm a pastry chef. Our croissants are world-famous here!",
         position: { x: 20, y: 60 },
-        color: '#e74c3c',
-        mood: 'happy',
-        description: 'A passionate pastry chef who runs a small bakery. She loves sharing stories about French culinary traditions.',
-        role: 'chef'
+        color: "#e74c3c",
+        mood: "happy",
+        description:
+          "A passionate pastry chef who runs a small bakery. She loves sharing stories about French culinary traditions.",
+        role: "chef",
       },
       {
-        id: '2',
-        name: 'Pierre',
-        hint: 'Cette tour de fer là-bas? Construite en 1889, elle fait 330 mètres de haut!',
-        translation: 'That iron tower over there? Built in 1889, stands 330 meters tall!',
+        id: "2",
+        name: "Pierre",
+        hint: "Cette tour de fer là-bas? Construite en 1889, elle fait 330 mètres de haut!",
+        translation:
+          "That iron tower over there? Built in 1889, stands 330 meters tall!",
         position: { x: 50, y: 55 },
-        color: '#3498db',
-        mood: 'neutral',
-        description: 'A knowledgeable tour guide with decades of experience. He knows every historical detail of the city.',
-        role: 'guide'
+        color: "#3498db",
+        mood: "neutral",
+        description:
+          "A knowledgeable tour guide with decades of experience. He knows every historical detail of the city.",
+        role: "guide",
       },
       {
-        id: '3',
-        name: 'Sophie',
-        hint: 'Bienvenue dans la Ville Lumière! La capitale mondiale de la mode!',
-        translation: 'Welcome to the City of Light! Fashion capital of the world!',
+        id: "3",
+        name: "Sophie",
+        hint: "Bienvenue dans la Ville Lumière! La capitale mondiale de la mode!",
+        translation:
+          "Welcome to the City of Light! Fashion capital of the world!",
         position: { x: 75, y: 62 },
-        color: '#9b59b6',
-        mood: 'excited',
-        description: 'A fashion designer who has lived in Paris all her life. She loves welcoming visitors to her beloved city.',
-        role: 'artist'
-      }
+        color: "#9b59b6",
+        mood: "excited",
+        description:
+          "A fashion designer who has lived in Paris all her life. She loves welcoming visitors to her beloved city.",
+        role: "artist",
+      },
     ],
-    acceptableAnswers: ['paris', 'france', 'paris france', 'paris, france'],
+    acceptableAnswers: ["paris", "france", "paris france", "paris, france"],
     languageDifficulty: {
-      level: 'Medium',
-      description: 'Driver mixes French and English'
+      level: "Medium",
+      description: "Driver mixes French and English",
     },
-    driverName: 'Pierre',
-    driverLanguages: ['FR', 'EN'],
-    openingLine: "Bonjour! Quelle belle matinée, non? The traffic is light today—lucky for you, mon ami!",
-    openingLineTranslation: "Hello! What a beautiful morning, right? The traffic is light today—lucky for you, my friend!",
+    driverName: "Pierre",
+    driverLanguages: ["FR", "EN"],
+    openingLine:
+      "Bonjour! Quelle belle matinée, non? The traffic is light today—lucky for you, mon ami!",
+    openingLineTranslation:
+      "Hello! What a beautiful morning, right? The traffic is light today—lucky for you, my friend!",
     progressiveHints: {
       hint1: {
         text: "Ah, le climat ici? It's temperate... mild winters, warm summers. Very comfortable, non?",
-        translation: "Ah, the climate here? It's temperate... mild winters, warm summers. Very comfortable, right?"
+        translation:
+          "Ah, the climate here? It's temperate... mild winters, warm summers. Very comfortable, right?",
       },
       hint2: {
         text: "Les croissants, mon ami! Everyone here starts their day with croissants et café. C'est magnifique!",
-        translation: "The croissants, my friend! Everyone here starts their day with croissants and coffee. It's magnificent!"
+        translation:
+          "The croissants, my friend! Everyone here starts their day with croissants and coffee. It's magnificent!",
       },
       hint3: {
         text: "You see that tower there? La Tour Eiffel! Built in 1889, the most famous landmark in all of France!",
-        translation: "You see that tower there? The Eiffel Tower! Built in 1889, the most famous landmark in all of France!"
-      }
-    }
+        translation:
+          "You see that tower there? The Eiffel Tower! Built in 1889, the most famous landmark in all of France!",
+      },
+    },
   },
   {
-    name: 'Tokyo, Japan',
-    city: 'Tokyo',
-    country: 'Japan',
-    image: 'https://images.unsplash.com/photo-1621139151681-5ac8d73128ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b2t5byUyMGphcGFuJTIwc3RyZWV0fGVufDF8fHx8MTc2MzEyMDkzM3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "Tokyo, Japan",
+    city: "Tokyo",
+    country: "Japan",
+    image:
+      "https://images.unsplash.com/photo-1621139151681-5ac8d73128ce?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0b2t5byUyMGphcGFuJTIwc3RyZWV0fGVufDF8fHx8MTc2MzEyMDkzM3ww&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Yuki',
-        hint: 'ここの新鮮な寿司を試しましたか？世界一ですよ!',
-        romanization: 'Koko no shinsen na sushi wo tameshimashita ka? Sekai-ichi desu yo!',
-        translation: 'Have you tried the fresh sushi here? Best in the world!',
+        id: "1",
+        name: "Yuki",
+        hint: "ここの新鮮な寿司を試しましたか？世界一ですよ!",
+        romanization:
+          "Koko no shinsen na sushi wo tameshimashita ka? Sekai-ichi desu yo!",
+        translation: "Have you tried the fresh sushi here? Best in the world!",
         position: { x: 25, y: 58 },
-        color: '#e91e63',
-        mood: 'excited',
-        description: 'An enthusiastic sushi chef who takes pride in the local seafood. She works at a traditional restaurant.',
-        role: 'chef'
+        color: "#e91e63",
+        mood: "excited",
+        description:
+          "An enthusiastic sushi chef who takes pride in the local seafood. She works at a traditional restaurant.",
+        role: "chef",
       },
       {
-        id: '2',
-        name: 'Kenji',
-        hint: '毎年春には、私たちの首都で桜が美しく咲きます。',
-        romanization: 'Maitoshi haru ni wa, watashitachi no shuto de sakura ga utsukushiku sakimasu.',
-        translation: 'The cherry blossoms bloom beautifully in our capital every spring.',
+        id: "2",
+        name: "Kenji",
+        hint: "毎年春には、私たちの首都で桜が美しく咲きます。",
+        romanization:
+          "Maitoshi haru ni wa, watashitachi no shuto de sakura ga utsukushiku sakimasu.",
+        translation:
+          "The cherry blossoms bloom beautifully in our capital every spring.",
         position: { x: 55, y: 62 },
-        color: '#00bcd4',
-        mood: 'happy',
-        description: 'A friendly local who enjoys sharing the beauty of his hometown with visitors, especially during sakura season.',
-        role: 'local'
+        color: "#00bcd4",
+        mood: "happy",
+        description:
+          "A friendly local who enjoys sharing the beauty of his hometown with visitors, especially during sakura season.",
+        role: "local",
       },
       {
-        id: '3',
-        name: 'Sakura',
-        hint: 'ネオンサインと新幹線が、ここを世界最先端の都市にしています!',
-        romanization: 'Neon sain to shinkansen ga, koko wo sekai saisentan no toshi ni shite imasu!',
-        translation: 'Our neon signs and bullet trains make this the most high-tech city!',
+        id: "3",
+        name: "Sakura",
+        hint: "ネオンサインと新幹線が、ここを世界最先端の都市にしています!",
+        romanization:
+          "Neon sain to shinkansen ga, koko wo sekai saisentan no toshi ni shite imasu!",
+        translation:
+          "Our neon signs and bullet trains make this the most high-tech city!",
         position: { x: 70, y: 55 },
-        color: '#ff5722',
-        mood: 'neutral',
-        description: 'A tech-savvy train station worker who witnesses the city\'s amazing infrastructure every day.',
-        role: 'worker'
-      }
+        color: "#ff5722",
+        mood: "neutral",
+        description:
+          "A tech-savvy train station worker who witnesses the city's amazing infrastructure every day.",
+        role: "worker",
+      },
     ],
-    acceptableAnswers: ['tokyo', 'japan', 'tokyo japan', 'tokyo, japan'],
+    acceptableAnswers: ["tokyo", "japan", "tokyo japan", "tokyo, japan"],
     languageDifficulty: {
-      level: 'Hard',
-      description: 'Driver speaks mostly Japanese, minimal English'
+      level: "Hard",
+      description: "Driver speaks mostly Japanese, minimal English",
     },
-    driverName: 'Kenji',
-    driverLanguages: ['JA', 'EN'],
-    openingLine: "おはようございます！Ohayo gozaimasu! You look... tired, friend. Long night?",
-    openingLineTranslation: "Good morning! You look... tired, friend. Long night?",
+    driverName: "Kenji",
+    driverLanguages: ["JA", "EN"],
+    openingLine:
+      "おはようございます！Ohayo gozaimasu! You look... tired, friend. Long night?",
+    openingLineTranslation:
+      "Good morning! You look... tired, friend. Long night?",
     progressiveHints: {
       hint1: {
         text: "気候は... humid in summer, cool in winter. Four seasons, very clear. 日本の典型的な気候です。",
-        romanization: "Kikō wa... humid in summer, cool in winter. Four seasons, very clear. Nihon no tenkeiteki na kikō desu.",
-        translation: "The climate is... humid in summer, cool in winter. Four seasons, very clear. It's typical Japanese climate."
+        romanization:
+          "Kikō wa... humid in summer, cool in winter. Four seasons, very clear. Nihon no tenkeiteki na kikō desu.",
+        translation:
+          "The climate is... humid in summer, cool in winter. Four seasons, very clear. It's typical Japanese climate.",
       },
       hint2: {
         text: "新鮮な寿司！Shinsen na sushi! Everyone here loves raw fish... it's the best in the world, trust me!",
-        romanization: "Shinsen na sushi! Everyone here loves raw fish... it's the best in the world, trust me!",
-        translation: "Fresh sushi! Everyone here loves raw fish... it's the best in the world, trust me!"
+        romanization:
+          "Shinsen na sushi! Everyone here loves raw fish... it's the best in the world, trust me!",
+        translation:
+          "Fresh sushi! Everyone here loves raw fish... it's the best in the world, trust me!",
       },
       hint3: {
         text: "渋谷交差点... Shibuya crossing! And 東京タワー—Tokyo Tower! The capital has everything, ne?",
-        romanization: "Shibuya kōsaten... Shibuya crossing! And Tōkyō Tawā—Tokyo Tower! The capital has everything, ne?",
-        translation: "Shibuya crossing... Shibuya crossing! And Tokyo Tower! The capital has everything, right?"
-      }
-    }
+        romanization:
+          "Shibuya kōsaten... Shibuya crossing! And Tōkyō Tawā—Tokyo Tower! The capital has everything, ne?",
+        translation:
+          "Shibuya crossing... Shibuya crossing! And Tokyo Tower! The capital has everything, right?",
+      },
+    },
   },
   {
-    name: 'Cairo, Egypt',
-    city: 'Cairo',
-    country: 'Egypt',
-    image: 'https://images.unsplash.com/photo-1692986172150-ec32dccfa5f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYWlybyUyMHB5cmFtaWRzJTIwZWd5cHR8ZW58MXx8fHwxNzYzMTM4MzkwfDA&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "Cairo, Egypt",
+    city: "Cairo",
+    country: "Egypt",
+    image:
+      "https://images.unsplash.com/photo-1692986172150-ec32dccfa5f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYWlybyUyMHB5cmFtaWRzJTIwZWd5cHR8ZW58MXx8fHwxNzYzMTM4MzkwfDA&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Ahmed',
-        hint: 'هذه الهياكل القديمة؟ بُنيت منذ أكثر من 4500 سنة من قبل الفراعنة!',
-        romanization: 'Hadhihi al-hayakil al-qadeemah? Buniyat mundhu akthar min 4500 sanah min qibal al-faraenah!',
-        translation: 'Those ancient structures? Built over 4,500 years ago by pharaohs!',
+        id: "1",
+        name: "Ahmed",
+        hint: "هذه الهياكل القديمة؟ بُنيت منذ أكثر من 4500 سنة من قبل الفراعنة!",
+        romanization:
+          "Hadhihi al-hayakil al-qadeemah? Buniyat mundhu akthar min 4500 sanah min qibal al-faraenah!",
+        translation:
+          "Those ancient structures? Built over 4,500 years ago by pharaohs!",
         position: { x: 30, y: 65 },
-        color: '#ff9800',
-        mood: 'mysterious',
-        description: 'An experienced tour guide specializing in ancient Egyptian history. He has studied the pyramids for over 20 years.',
-        role: 'guide'
+        color: "#ff9800",
+        mood: "mysterious",
+        description:
+          "An experienced tour guide specializing in ancient Egyptian history. He has studied the pyramids for over 20 years.",
+        role: "guide",
       },
       {
-        id: '2',
-        name: 'Fatima',
-        hint: 'نهر النيل يمر عبر مدينتنا، أطول نهر في أ��ريقيا!',
-        romanization: 'Nahr al-Neel yamurr abra madeenatina, atwal nahr fee Ifriqiya!',
-        translation: 'The Nile River flows through our city, the longest river in Africa!',
+        id: "2",
+        name: "Fatima",
+        hint: "نهر النيل يمر عبر مدينتنا، أطول نهر في أ��ريقيا!",
+        romanization:
+          "Nahr al-Neel yamurr abra madeenatina, atwal nahr fee Ifriqiya!",
+        translation:
+          "The Nile River flows through our city, the longest river in Africa!",
         position: { x: 60, y: 58 },
-        color: '#795548',
-        mood: 'happy',
-        description: 'A local shopkeeper who grew up along the Nile. She loves sharing stories about her city with travelers.',
-        role: 'vendor'
+        color: "#795548",
+        mood: "happy",
+        description:
+          "A local shopkeeper who grew up along the Nile. She loves sharing stories about her city with travelers.",
+        role: "vendor",
       },
       {
-        id: '3',
-        name: 'Omar',
-        hint: 'أبو الهول العظيم يحرس هذه الأراضي. مرحباً بك في عجائب العالم القديم!',
-        romanization: 'Abu al-Hawl al-Atheem yahrus hadhihi al-aradi. Marhaban bika fee ajaeb al-aalam al-qadeem!',
-        translation: 'The Great Sphinx guards these lands. Welcome to ancient wonders!',
+        id: "3",
+        name: "Omar",
+        hint: "أبو الهول العظيم يحرس هذه الأراضي. مرحباً بك في عجائب العالم القديم!",
+        romanization:
+          "Abu al-Hawl al-Atheem yahrus hadhihi al-aradi. Marhaban bika fee ajaeb al-aalam al-qadeem!",
+        translation:
+          "The Great Sphinx guards these lands. Welcome to ancient wonders!",
         position: { x: 75, y: 60 },
-        color: '#607d8b',
-        mood: 'neutral',
-        description: 'A local resident who lives near the ancient monuments. He appreciates the rich cultural heritage of his homeland.',
-        role: 'local'
-      }
+        color: "#607d8b",
+        mood: "neutral",
+        description:
+          "A local resident who lives near the ancient monuments. He appreciates the rich cultural heritage of his homeland.",
+        role: "local",
+      },
     ],
-    acceptableAnswers: ['cairo', 'egypt', 'cairo egypt', 'cairo, egypt'],
+    acceptableAnswers: ["cairo", "egypt", "cairo egypt", "cairo, egypt"],
     languageDifficulty: {
-      level: 'Hard',
-      description: 'Driver speaks mostly Arabic, minimal English'
+      level: "Hard",
+      description: "Driver speaks mostly Arabic, minimal English",
     },
-    driverName: 'Ahmed',
-    driverLanguages: ['AR', 'EN'],
-    openingLine: "مرحباً! Marhaba! Welcome, welcome! First time here? The morning sun is already hot today!",
-    openingLineTranslation: "Hello! Welcome, welcome! First time here? The morning sun is already hot today!",
+    driverName: "Ahmed",
+    driverLanguages: ["AR", "EN"],
+    openingLine:
+      "مرحباً! Marhaba! Welcome, welcome! First time here? The morning sun is already hot today!",
+    openingLineTranslation:
+      "Hello! Welcome, welcome! First time here? The morning sun is already hot today!",
     progressiveHints: {
       hint1: {
         text: "الطقس هنا؟ Al-taqs? Very hot... desert climate. Dry, sunny, sometimes sandstorms. Very ancient land!",
-        romanization: "Al-taqs huna? Very hot... desert climate. Dry, sunny, sometimes sandstorms. Very ancient land!",
-        translation: "The weather here? Very hot... desert climate. Dry, sunny, sometimes sandstorms. Very ancient land!"
+        romanization:
+          "Al-taqs huna? Very hot... desert climate. Dry, sunny, sometimes sandstorms. Very ancient land!",
+        translation:
+          "The weather here? Very hot... desert climate. Dry, sunny, sometimes sandstorms. Very ancient land!",
       },
       hint2: {
         text: "كشري! Kushari! Our national dish... rice, lentils, pasta, yummy! And فول—fool, fava beans for breakfast!",
-        romanization: "Kushari! Our national dish... rice, lentils, pasta, yummy! And fool, fava beans for breakfast!",
-        translation: "Kushari! Our national dish... rice, lentils, pasta, yummy! And fool, fava beans for breakfast!"
+        romanization:
+          "Kushari! Our national dish... rice, lentils, pasta, yummy! And fool, fava beans for breakfast!",
+        translation:
+          "Kushari! Our national dish... rice, lentils, pasta, yummy! And fool, fava beans for breakfast!",
       },
       hint3: {
         text: "الأهرامات! Al-Ahramat! The Pyramids of Giza... 4,500 years old! One of Seven Wonders, yes?",
-        romanization: "Al-Ahramat! The Pyramids of Giza... 4,500 years old! One of Seven Wonders, yes?",
-        translation: "The Pyramids! The Pyramids of Giza... 4,500 years old! One of Seven Wonders, yes?"
-      }
-    }
+        romanization:
+          "Al-Ahramat! The Pyramids of Giza... 4,500 years old! One of Seven Wonders, yes?",
+        translation:
+          "The Pyramids! The Pyramids of Giza... 4,500 years old! One of Seven Wonders, yes?",
+      },
+    },
   },
   {
-    name: 'New York, USA',
-    city: 'New York',
-    country: 'USA',
-    image: 'https://images.unsplash.com/photo-1514565131-fce0801e5785?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuZXclMjB5b3JrJTIwY2l0eSUyMHNreWxpbmV8ZW58MXx8fHwxNzYzMTExOTU4fDA&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "New York, USA",
+    city: "New York",
+    country: "USA",
+    image:
+      "https://images.unsplash.com/photo-1514565131-fce0801e5785?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuZXclMjB5b3JrJTIwY2l0eSUyMHNreWxpbmV8ZW58MXx8fHwxNzYzMTExOTU4fDA&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Jake',
+        id: "1",
+        name: "Jake",
         hint: "Best pizza slices in the Big Apple! And don't miss Broadway!",
         position: { x: 22, y: 60 },
-        color: '#f44336',
-        mood: 'excited',
-        description: 'A passionate pizza shop owner who loves everything about NYC. He grew up in Brooklyn and knows all the best spots.',
-        role: 'vendor'
+        color: "#f44336",
+        mood: "excited",
+        description:
+          "A passionate pizza shop owner who loves everything about NYC. He grew up in Brooklyn and knows all the best spots.",
+        role: "vendor",
       },
       {
-        id: '2',
-        name: 'Emma',
-        hint: 'The Statue of Liberty welcomes everyone to our harbor!',
+        id: "2",
+        name: "Emma",
+        hint: "The Statue of Liberty welcomes everyone to our harbor!",
         position: { x: 52, y: 58 },
-        color: '#2196f3',
-        mood: 'happy',
-        description: 'A tour guide who specializes in American history and landmarks. She takes pride in showing visitors around the city.',
-        role: 'guide'
+        color: "#2196f3",
+        mood: "happy",
+        description:
+          "A tour guide who specializes in American history and landmarks. She takes pride in showing visitors around the city.",
+        role: "guide",
       },
       {
-        id: '3',
-        name: 'Marcus',
-        hint: 'Times Square lights up the city that never sleeps!',
+        id: "3",
+        name: "Marcus",
+        hint: "Times Square lights up the city that never sleeps!",
         position: { x: 78, y: 62 },
-        color: '#4caf50',
-        mood: 'neutral',
-        description: 'A local photographer who captures the energy of the city. He knows the best views and hidden spots.',
-        role: 'artist'
-      }
+        color: "#4caf50",
+        mood: "neutral",
+        description:
+          "A local photographer who captures the energy of the city. He knows the best views and hidden spots.",
+        role: "artist",
+      },
     ],
-    acceptableAnswers: ['new york', 'nyc', 'new york city', 'new york usa', 'usa', 'america'],
+    acceptableAnswers: [
+      "new york",
+      "nyc",
+      "new york city",
+      "new york usa",
+      "usa",
+      "america",
+    ],
     languageDifficulty: {
-      level: 'Easy',
-      description: 'Driver speaks clear English'
+      level: "Easy",
+      description: "Driver speaks clear English",
     },
-    driverName: 'Jake',
-    driverLanguages: ['EN'],
-    openingLine: "Hey there! Rough night, huh? Don't worry, happens to the best of us. Let's get you sorted.",
+    driverName: "Jake",
+    driverLanguages: ["EN"],
+    openingLine:
+      "Hey there! Rough night, huh? Don't worry, happens to the best of us. Let's get you sorted.",
     progressiveHints: {
       hint1: {
         text: "Climate here? Cold winters with snow, hot humid summers. Four seasons, you know? Pretty typical for the East Coast.",
-        translation: "Climate here? Cold winters with snow, hot humid summers. Four seasons, you know? Pretty typical for the East Coast."
+        translation:
+          "Climate here? Cold winters with snow, hot humid summers. Four seasons, you know? Pretty typical for the East Coast.",
       },
       hint2: {
         text: "Pizza! Best pizza slices in the world, my friend. And hot dogs from the street carts—that's the real deal here!",
-        translation: "Pizza! Best pizza slices in the world, my friend. And hot dogs from the street carts—that's the real deal here!"
+        translation:
+          "Pizza! Best pizza slices in the world, my friend. And hot dogs from the street carts—that's the real deal here!",
       },
       hint3: {
         text: "The Statue of Liberty! And Times Square—the city that never sleeps! Broadway shows, Empire State Building... this is the Big Apple!",
-        translation: "The Statue of Liberty! And Times Square—the city that never sleeps! Broadway shows, Empire State Building... this is the Big Apple!"
-      }
-    }
+        translation:
+          "The Statue of Liberty! And Times Square—the city that never sleeps! Broadway shows, Empire State Building... this is the Big Apple!",
+      },
+    },
   },
   {
-    name: 'Sydney, Australia',
-    city: 'Sydney',
-    country: 'Australia',
-    image: 'https://images.unsplash.com/photo-1523059623039-a9ed027e7fad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzeWRuZXklMjBvcGVyYSUyMGhvdXNlfGVufDF8fHx8MTc2MzE2MzY4N3ww&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "Sydney, Australia",
+    city: "Sydney",
+    country: "Australia",
+    image:
+      "https://images.unsplash.com/photo-1523059623039-a9ed027e7fad?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzeWRuZXklMjBvcGVyYSUyMGhvdXNlfGVufDF8fHx8MTc2MzE2MzY4N3ww&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Jack',
-        hint: 'G\'day mate! That Opera House is iconic, built right on the harbor!',
+        id: "1",
+        name: "Jack",
+        hint: "G'day mate! That Opera House is iconic, built right on the harbor!",
         position: { x: 28, y: 58 },
-        color: '#ffeb3b',
-        mood: 'happy',
-        description: 'A cheerful local who loves welcoming visitors to Sydney. He enjoys surfing and knows all about the famous landmarks.',
-        role: 'local'
+        color: "#ffeb3b",
+        mood: "happy",
+        description:
+          "A cheerful local who loves welcoming visitors to Sydney. He enjoys surfing and knows all about the famous landmarks.",
+        role: "local",
       },
       {
-        id: '2',
-        name: 'Olivia',
-        hint: 'Beautiful beaches everywhere! And you might see a kangaroo or two!',
+        id: "2",
+        name: "Olivia",
+        hint: "Beautiful beaches everywhere! And you might see a kangaroo or two!",
         position: { x: 55, y: 60 },
-        color: '#009688',
-        mood: 'excited',
-        description: 'A wildlife enthusiast and tour guide who specializes in Australian nature. She loves introducing visitors to the unique fauna.',
-        role: 'guide'
+        color: "#009688",
+        mood: "excited",
+        description:
+          "A wildlife enthusiast and tour guide who specializes in Australian nature. She loves introducing visitors to the unique fauna.",
+        role: "guide",
       },
       {
-        id: '3',
-        name: 'Liam',
-        hint: 'Southern hemisphere beauty! Harbor Bridge connects us all!',
+        id: "3",
+        name: "Liam",
+        hint: "Southern hemisphere beauty! Harbor Bridge connects us all!",
         position: { x: 72, y: 55 },
-        color: '#673ab7',
-        mood: 'neutral',
-        description: 'An engineer who worked on Harbor Bridge maintenance. He appreciates the architectural beauty of the city.',
-        role: 'worker'
-      }
+        color: "#673ab7",
+        mood: "neutral",
+        description:
+          "An engineer who worked on Harbor Bridge maintenance. He appreciates the architectural beauty of the city.",
+        role: "worker",
+      },
     ],
-    acceptableAnswers: ['sydney', 'australia', 'sydney australia', 'sydney, australia'],
+    acceptableAnswers: [
+      "sydney",
+      "australia",
+      "sydney australia",
+      "sydney, australia",
+    ],
     languageDifficulty: {
-      level: 'Easy',
-      description: 'Driver speaks clear English'
+      level: "Easy",
+      description: "Driver speaks clear English",
     },
-    driverName: 'Jack',
-    driverLanguages: ['EN'],
-    openingLine: "G'day mate! You look like you had quite the night! No worries, we'll get you where you need to go.",
+    driverName: "Jack",
+    driverLanguages: ["EN"],
+    openingLine:
+      "G'day mate! You look like you had quite the night! No worries, we'll get you where you need to go.",
     progressiveHints: {
       hint1: {
         text: "G'day! The weather here? Warm and sunny most of the year, mate. Southern hemisphere, so seasons are flipped from up north!",
-        translation: "G'day! The weather here? Warm and sunny most of the year, mate. Southern hemisphere, so seasons are flipped from up north!"
+        translation:
+          "G'day! The weather here? Warm and sunny most of the year, mate. Southern hemisphere, so seasons are flipped from up north!",
       },
       hint2: {
         text: "Vegemite on toast for brekkie! And meat pies, mate—we love our meat pies. Throw another shrimp on the barbie, as they say!",
-        translation: "Vegemite on toast for breakfast! And meat pies, mate—we love our meat pies. Throw another shrimp on the barbie, as they say!"
+        translation:
+          "Vegemite on toast for breakfast! And meat pies, mate—we love our meat pies. Throw another shrimp on the barbie, as they say!",
       },
       hint3: {
         text: "The Opera House, mate! Right there on the harbor, looks like white sails. And the Harbor Bridge—we call it the Coathanger!",
-        translation: "The Opera House, mate! Right there on the harbor, looks like white sails. And the Harbor Bridge—we call it the Coathanger!"
-      }
-    }
+        translation:
+          "The Opera House, mate! Right there on the harbor, looks like white sails. And the Harbor Bridge—we call it the Coathanger!",
+      },
+    },
   },
   {
-    name: 'Rio de Janeiro, Brazil',
-    city: 'Rio de Janeiro',
-    country: 'Brazil',
-    image: 'https://images.unsplash.com/photo-1678044865436-29d7fcca4ffe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyaW8lMjBicmF6aWwlMjBiZWFjaHxlbnwxfHx8fDE3NjMxOTk5OTZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+    name: "Rio de Janeiro, Brazil",
+    city: "Rio de Janeiro",
+    country: "Brazil",
+    image:
+      "https://images.unsplash.com/photo-1678044865436-29d7fcca4ffe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyaW8lMjBicmF6aWwlMjBiZWFjaHxlbnwxfHx8fDE3NjMxOTk5OTZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
     characters: [
       {
-        id: '1',
-        name: 'Carlos',
-        hint: 'É Carnaval! Samba, praias e sol o ano todo!',
-        translation: 'Carnival time! Samba, beaches, and sunshine all year round!',
+        id: "1",
+        name: "Carlos",
+        hint: "É Carnaval! Samba, praias e sol o ano todo!",
+        translation:
+          "Carnival time! Samba, beaches, and sunshine all year round!",
         position: { x: 25, y: 62 },
-        color: '#ffc107',
-        mood: 'excited',
-        description: 'A samba dancer and carnival enthusiast who loves celebrating Brazilian culture. He performs in parades every year.',
-        role: 'artist'
+        color: "#ffc107",
+        mood: "excited",
+        description:
+          "A samba dancer and carnival enthusiast who loves celebrating Brazilian culture. He performs in parades every year.",
+        role: "artist",
       },
       {
-        id: '2',
-        name: 'Isabella',
-        hint: 'O Cristo Redentor vigia nossa linda cidade do alto da montanha!',
-        translation: 'Christ the Redeemer watches over our beautiful city from the mountain!',
+        id: "2",
+        name: "Isabella",
+        hint: "O Cristo Redentor vigia nossa linda cidade do alto da montanha!",
+        translation:
+          "Christ the Redeemer watches over our beautiful city from the mountain!",
         position: { x: 58, y: 57 },
-        color: '#8bc34a',
-        mood: 'happy',
-        description: 'A friendly tour guide who loves showing visitors the iconic landmarks of Rio. She grew up in the shadow of Christ the Redeemer.',
-        role: 'guide'
+        color: "#8bc34a",
+        mood: "happy",
+        description:
+          "A friendly tour guide who loves showing visitors the iconic landmarks of Rio. She grew up in the shadow of Christ the Redeemer.",
+        role: "guide",
       },
       {
-        id: '3',
-        name: 'Lucas',
-        hint: 'A praia de Copacabana está lotada! Bem-vindo à Cidade Maravilhosa!',
-        translation: 'Copacabana Beach is packed! Welcome to the Marvelous City!',
+        id: "3",
+        name: "Lucas",
+        hint: "A praia de Copacabana está lotada! Bem-vindo à Cidade Maravilhosa!",
+        translation:
+          "Copacabana Beach is packed! Welcome to the Marvelous City!",
         position: { x: 75, y: 60 },
-        color: '#03a9f4',
-        mood: 'neutral',
-        description: 'A beach vendor who sells refreshments at Copacabana. He knows everyone and everything happening in the area.',
-        role: 'vendor'
-      }
+        color: "#03a9f4",
+        mood: "neutral",
+        description:
+          "A beach vendor who sells refreshments at Copacabana. He knows everyone and everything happening in the area.",
+        role: "vendor",
+      },
     ],
-    acceptableAnswers: ['rio', 'rio de janeiro', 'brazil', 'rio brazil', 'rio, brazil'],
+    acceptableAnswers: [
+      "rio",
+      "rio de janeiro",
+      "brazil",
+      "rio brazil",
+      "rio, brazil",
+    ],
     languageDifficulty: {
-      level: 'Medium',
-      description: 'Driver mixes Portuguese and English'
+      level: "Medium",
+      description: "Driver mixes Portuguese and English",
     },
-    driverName: 'Carlos',
-    driverLanguages: ['PT', 'EN'],
-    openingLine: "Oi! Bom dia! Good morning, my friend! You enjoying your visit? The beaches are beautiful today!",
-    openingLineTranslation: "Hi! Good morning! You enjoying your visit? The beaches are beautiful today!",
+    driverName: "Carlos",
+    driverLanguages: ["PT", "EN"],
+    openingLine:
+      "Oi! Bom dia! Good morning, my friend! You enjoying your visit? The beaches are beautiful today!",
+    openingLineTranslation:
+      "Hi! Good morning! You enjoying your visit? The beaches are beautiful today!",
     progressiveHints: {
       hint1: {
         text: "O clima aqui? Tropical, meu amigo! Warm all year, lots of sun. Perfect for the beach, sim?",
-        translation: "The climate here? Tropical, my friend! Warm all year, lots of sun. Perfect for the beach, yes?"
+        translation:
+          "The climate here? Tropical, my friend! Warm all year, lots of sun. Perfect for the beach, yes?",
       },
       hint2: {
         text: "Feijoada! Black bean stew with meat—delicioso! And caipirinha to drink. Every day is celebration here!",
-        translation: "Feijoada! Black bean stew with meat—delicious! And caipirinha to drink. Every day is celebration here!"
+        translation:
+          "Feijoada! Black bean stew with meat—delicious! And caipirinha to drink. Every day is celebration here!",
       },
       hint3: {
         text: "Cristo Redentor! Christ the Redeemer stands on top of Corcovado Mountain. And Copacabana Beach—most famous in the world!",
-        translation: "Christ the Redeemer! Christ the Redeemer stands on top of Corcovado Mountain. And Copacabana Beach—most famous in the world!"
-      }
-    }
-  }
+        translation:
+          "Christ the Redeemer! Christ the Redeemer stands on top of Corcovado Mountain. And Copacabana Beach—most famous in the world!",
+      },
+    },
+  },
 ];
 
 export default function App() {
-  const [screen, setScreen] = useState<'menu' | 'howToPlay' | 'settings' | 'game'>('menu');
-  const [gameState, setGameState] = useState<'intro' | 'playing' | 'result' | 'summary'>('intro');
+  const [screen, setScreen] = useState<
+    "menu" | "howToPlay" | "settings" | "game"
+  >("menu");
+  const [gameState, setGameState] = useState<
+    "intro" | "playing" | "result" | "summary"
+  >("intro");
   const [visitedLocations, setVisitedLocations] = useState<string[]>([]); // Track visited locations
   const [currentRound, setCurrentRound] = useState(0);
   const [totalPoints, setTotalPoints] = useState(0);
@@ -464,7 +560,9 @@ export default function App() {
   const [roundStartTime, setRoundStartTime] = useState<number | null>(null);
   const [wrongGuessCount, setWrongGuessCount] = useState(0);
   const [revealedHints, setRevealedHints] = useState<Set<string>>(new Set());
-  const [revealedTranslations, setRevealedTranslations] = useState<Set<string>>(new Set());
+  const [revealedTranslations, setRevealedTranslations] = useState<Set<string>>(
+    new Set()
+  );
   const [lastResult, setLastResult] = useState<{
     correct: boolean;
     pointsEarned: number;
@@ -481,9 +579,13 @@ export default function App() {
   } | null>(null);
   const [npcVoiceEnabled, setNpcVoiceEnabled] = useState(true);
   const [compassHeading, setCompassHeading] = useState(0);
-  const [voiceStatus, setVoiceStatus] = useState<'idle' | 'listening' | 'processing' | 'replying'>('idle');
+  const [voiceStatus, setVoiceStatus] = useState<
+    "idle" | "listening" | "processing" | "replying"
+  >("idle");
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<ChatMessage[]>(
+    []
+  );
   const [isChatPanelOpen, setIsChatPanelOpen] = useState(false);
   const [showQuitDialog, setShowQuitDialog] = useState(false);
   const [conversationCount, setConversationCount] = useState(0); // Track conversations (not hints)
@@ -499,26 +601,31 @@ export default function App() {
 
   // Timer countdown effect
   useEffect(() => {
-    if (gameState === 'playing' && !reviewMode && roundTimer > 0) {
+    if (gameState === "playing" && !reviewMode && roundTimer > 0) {
       const interval = setInterval(() => {
-        setRoundTimer(prev => {
+        setRoundTimer((prev) => {
           if (prev <= 1) {
             // Time's up!
-            toast.error('Time\'s up!', {
-              description: 'Moving to next round...',
+            toast.error("Time's up!", {
+              description: "Moving to next round...",
               duration: 3000,
             });
             // Auto-submit with no guess
             setTimeout(() => {
-              const pointsEarned = calculatePoints(0, revealedHints.size, revealedTranslations.size, wrongGuessCount);
-              setTotalPoints(prevPoints => prevPoints + pointsEarned);
+              const pointsEarned = calculatePoints(
+                0,
+                revealedHints.size,
+                revealedTranslations.size,
+                wrongGuessCount
+              );
+              setTotalPoints((prevPoints) => prevPoints + pointsEarned);
               setLastResult({
                 correct: false,
                 pointsEarned,
                 timeRemaining: 0,
-                playerGuess: undefined
+                playerGuess: undefined,
               });
-              setGameState('result');
+              setGameState("result");
             }, 1000);
             clearInterval(interval);
             return 0;
@@ -529,61 +636,71 @@ export default function App() {
 
       return () => clearInterval(interval);
     }
-  }, [gameState, reviewMode, roundTimer, revealedHints.size, revealedTranslations.size, wrongGuessCount]);
+  }, [
+    gameState,
+    reviewMode,
+    roundTimer,
+    revealedHints.size,
+    revealedTranslations.size,
+    wrongGuessCount,
+  ]);
 
   // Function to generate a new scenario from the API
-  const generateNewScenario = async (difficulty: 'Easy' | 'Medium' | 'Hard' = 'Medium') => {
+  const generateNewScenario = async (
+    difficulty: "Easy" | "Medium" | "Hard" = "Medium"
+  ) => {
     setIsLoadingScenario(true);
     setScenarioError(null);
 
     try {
-      const response = await fetch('/api/generate-game', {
-        method: 'POST',
+      const response = await fetch("/api/generate-game", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          usedLocations: locations.map(loc => loc.name),
+          usedLocations: locations.map((loc) => loc.name),
           difficulty,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate scenario');
+        throw new Error("Failed to generate scenario");
       }
 
       const newLocation: Location = await response.json();
-      setLocations(prev => [...prev, newLocation]);
+      setLocations((prev) => [...prev, newLocation]);
       setIsLoadingScenario(false);
       return newLocation;
     } catch (error) {
-      console.error('Error generating scenario:', error);
-      setScenarioError('Failed to generate scenario. Please try again.');
+      console.error("Error generating scenario:", error);
+      setScenarioError("Failed to generate scenario. Please try again.");
       setIsLoadingScenario(false);
 
       // Fallback to dummy data if API fails
-      const fallbackLocation = DUMMY_LOCATIONS[locations.length % DUMMY_LOCATIONS.length];
-      setLocations(prev => [...prev, fallbackLocation]);
-      toast.error('Using fallback scenario due to generation error');
+      const fallbackLocation =
+        DUMMY_LOCATIONS[locations.length % DUMMY_LOCATIONS.length];
+      setLocations((prev) => [...prev, fallbackLocation]);
+      toast.error("Using fallback scenario due to generation error");
       return fallbackLocation;
     }
   };
 
   // Get collected hints for the right panel
   const collectedHints = currentLocation?.characters
-    .filter(c => revealedHints.has(c.id))
-    .map(c => ({
+    .filter((c) => revealedHints.has(c.id))
+    .map((c) => ({
       id: c.id,
       characterName: c.name,
       hint: c.hint,
       translation: c.translation,
       color: c.color,
-      translationRevealed: revealedTranslations.has(c.id)
+      translationRevealed: revealedTranslations.has(c.id),
     }));
 
   const handleStartGame = async () => {
-    setScreen('game');
-    setGameState('intro');
+    setScreen("game");
+    setGameState("intro");
     setCurrentRound(0);
     setTotalPoints(0);
     setRoundTimer(300); // Reset to 5 minutes
@@ -596,11 +713,11 @@ export default function App() {
     setLocations([]); // Clear previous game locations
 
     // Generate the first scenario
-    await generateNewScenario('Easy'); // Start with easy difficulty
+    await generateNewScenario("Easy"); // Start with easy difficulty
   };
 
   const handleStartRound = () => {
-    setGameState('playing');
+    setGameState("playing");
     setReviewMode(false); // Ensure we're not in review mode when starting a round
     // Set a random compass heading for this location
     setCompassHeading(Math.floor(Math.random() * 360));
@@ -613,29 +730,31 @@ export default function App() {
     // Create initial driver message with opening line
     const openingMessage: ChatMessage = {
       id: Date.now().toString(),
-      speaker: 'driver',
+      speaker: "driver",
       text: `Your driver glances at you in the rear-view mirror and starts chatting: "${currentLocation.openingLine}"`,
       translation: currentLocation.openingLineTranslation,
-      color: currentLocation.characters[0]?.color || '#10b981'
+      color: currentLocation.characters[0]?.color || "#10b981",
     };
     setConversationHistory([openingMessage]);
   };
 
   const handleCharacterClick = (characterId: string) => {
     const isNewHint = !revealedHints.has(characterId);
-    setRevealedHints(prev => new Set([...prev, characterId]));
+    setRevealedHints((prev) => new Set([...prev, characterId]));
 
     // Notify about hint usage (affects points at the end)
     if (isNewHint) {
       toast.info(`Hint revealed`, {
         description: `Using hints will reduce your final points`,
         duration: 3000,
-        position: 'top-center',
+        position: "top-center",
       });
     }
 
     // Set the active dialogue
-    const character = currentLocation.characters.find(c => c.id === characterId);
+    const character = currentLocation.characters.find(
+      (c) => c.id === characterId
+    );
     if (character) {
       setActiveDialogue({
         characterId: character.id,
@@ -643,7 +762,7 @@ export default function App() {
         hint: character.hint,
         romanization: character.romanization,
         translation: character.translation,
-        color: character.color
+        color: character.color,
       });
 
       // Play hint audio if voice is enabled
@@ -655,19 +774,19 @@ export default function App() {
 
   const playHintAudio = async (text: string) => {
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
+      const response = await fetch("/api/tts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           input: text,
-          languageCodes: currentLocation?.driverLanguages || ['EN']
+          languageCodes: currentLocation?.driverLanguages || ["EN"],
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate speech');
+        throw new Error("Failed to generate speech");
       }
 
       const audioBlob = await response.blob();
@@ -682,34 +801,41 @@ export default function App() {
 
       await audio.play();
     } catch (error) {
-      console.error('Error playing hint audio:', error);
+      console.error("Error playing hint audio:", error);
       setIsPlayingAudio(false);
     }
   };
 
   const handleTranslationReveal = (characterId: string) => {
     const isNewTranslation = !revealedTranslations.has(characterId);
-    setRevealedTranslations(prev => new Set([...prev, characterId]));
+    setRevealedTranslations((prev) => new Set([...prev, characterId]));
 
     // Notify about translation usage
     if (isNewTranslation) {
       toast.info(`Translation revealed`, {
         description: `Using translations will reduce your final points`,
         duration: 3000,
-        position: 'top-center',
+        position: "top-center",
       });
     }
 
     // Update the conversation history to mark translation as revealed
-    setConversationHistory(prev => prev.map(msg =>
-      msg.characterId === characterId
-        ? { ...msg, translationRevealed: true }
-        : msg
-    ));
+    setConversationHistory((prev) =>
+      prev.map((msg) =>
+        msg.characterId === characterId
+          ? { ...msg, translationRevealed: true }
+          : msg
+      )
+    );
   };
 
   // Point calculation function
-  const calculatePoints = (timeRemaining: number, hintsUsed: number, translationsUsed: number, wrongGuesses: number) => {
+  const calculatePoints = (
+    timeRemaining: number,
+    hintsUsed: number,
+    translationsUsed: number,
+    wrongGuesses: number
+  ) => {
     // Base points: 1000
     let points = 1000;
 
@@ -732,12 +858,14 @@ export default function App() {
 
   const handleGuess = (guess: string) => {
     const normalizedGuess = guess.toLowerCase().trim();
-    const correct = currentLocation.acceptableAnswers.some(answer => {
+    const correct = currentLocation.acceptableAnswers.some((answer) => {
       const normalizedAnswer = answer.toLowerCase().trim();
       // Check for exact match or partial match in either direction
-      return normalizedGuess === normalizedAnswer ||
-             normalizedGuess.includes(normalizedAnswer) ||
-             normalizedAnswer.includes(normalizedGuess);
+      return (
+        normalizedGuess === normalizedAnswer ||
+        normalizedGuess.includes(normalizedAnswer) ||
+        normalizedAnswer.includes(normalizedGuess)
+      );
     });
 
     if (correct) {
@@ -746,116 +874,124 @@ export default function App() {
       const translationsUsed = revealedTranslations.size;
       const wrongGuesses = wrongGuessCount;
 
-      const pointsEarned = calculatePoints(roundTimer, hintsUsed, translationsUsed, wrongGuesses);
-      setTotalPoints(prev => prev + pointsEarned);
+      const pointsEarned = calculatePoints(
+        roundTimer,
+        hintsUsed,
+        translationsUsed,
+        wrongGuesses
+      );
+      setTotalPoints((prev) => prev + pointsEarned);
 
       setLastResult({
         correct,
         pointsEarned,
         timeRemaining: roundTimer,
-        playerGuess: guess
+        playerGuess: guess,
       });
-      setGameState('result');
+      setGameState("result");
     } else {
       // Wrong guess - allow another attempt
-      setWrongGuessCount(prev => prev + 1);
+      setWrongGuessCount((prev) => prev + 1);
 
       // Show toast notification
       toast.error(`Wrong guess!`, {
         description: `Try again! (-75 points penalty)`,
         duration: 3000,
-        position: 'top-center',
+        position: "top-center",
       });
     }
   };
 
   // Voice Control Handlers with real audio recording
-  const handleTranscriptionComplete = useCallback(async (transcribedText: string) => {
-    // Add player message to conversation
-    const playerMessage: ChatMessage = {
-      id: `player-${Date.now()}`,
-      speaker: 'player',
-      text: transcribedText
-    };
-    setConversationHistory(prev => [...prev, playerMessage]);
-
-    // Set driver to processing state
-    setVoiceStatus('processing');
-
-    try {
-      // Get driver response from LLM
-      const response = await fetch('/api/driver-response', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          playerQuestion: transcribedText,
-          locationName: currentLocation?.name,
-          driverName: currentLocation?.driverName,
-          driverLanguages: currentLocation?.driverLanguages,
-          difficulty: currentLocation?.languageDifficulty.level,
-          conversationHistory,
-          hintsGiven: revealedHints.size,
-          progressiveHints: currentLocation?.progressiveHints,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get driver response');
-      }
-
-      const data = await response.json();
-
-      // If it's a hint, track it
-      if (data.isHint && data.hintLevel) {
-        const hintId = `hint-${data.hintLevel}`;
-        setRevealedHints(prev => new Set([...prev, hintId]));
-        toast('Hint given (-100 points)', {
-          icon: '💡',
-          duration: 3000,
-        });
-      }
-
-      // Add driver response to conversation
-      const driverMessage: ChatMessage = {
-        id: `driver-chat-${Date.now()}`,
-        speaker: 'driver',
-        text: data.response,
-        color: currentLocation?.characters[0]?.color || '#10b981'
+  const handleTranscriptionComplete = useCallback(
+    async (transcribedText: string) => {
+      // Add player message to conversation
+      const playerMessage: ChatMessage = {
+        id: `player-${Date.now()}`,
+        speaker: "player",
+        text: transcribedText,
       };
-      setConversationHistory(prev => [...prev, driverMessage]);
-      setConversationCount(prev => prev + 1);
+      setConversationHistory((prev) => [...prev, playerMessage]);
 
-      // If voice is enabled, generate TTS audio
-      if (npcVoiceEnabled) {
-        setVoiceStatus('replying');
-        await playDriverVoice(data.response);
+      // Set driver to processing state
+      setVoiceStatus("processing");
+
+      try {
+        // Get driver response from LLM
+        const response = await fetch("/api/driver-response", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            playerQuestion: transcribedText,
+            locationName: currentLocation?.name,
+            driverName: currentLocation?.driverName,
+            driverLanguages: currentLocation?.driverLanguages,
+            difficulty: currentLocation?.languageDifficulty.level,
+            conversationHistory,
+            hintsGiven: revealedHints.size,
+            progressiveHints: currentLocation?.progressiveHints,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to get driver response");
+        }
+
+        const data = await response.json();
+
+        // If it's a hint, track it
+        if (data.isHint && data.hintLevel) {
+          const hintId = `hint-${data.hintLevel}`;
+          setRevealedHints((prev) => new Set([...prev, hintId]));
+          toast("Hint given (-100 points)", {
+            icon: "💡",
+            duration: 3000,
+          });
+        }
+
+        // Add driver response to conversation
+        const driverMessage: ChatMessage = {
+          id: `driver-chat-${Date.now()}`,
+          speaker: "driver",
+          text: data.response,
+          color: currentLocation?.characters[0]?.color || "#10b981",
+        };
+        setConversationHistory((prev) => [...prev, driverMessage]);
+        setConversationCount((prev) => prev + 1);
+
+        // If voice is enabled, generate TTS audio
+        if (npcVoiceEnabled) {
+          setVoiceStatus("replying");
+          await playDriverVoice(data.response);
+        }
+
+        setVoiceStatus("idle");
+      } catch (error) {
+        console.error("Error getting driver response:", error);
+        toast.error("Failed to get driver response");
+        setVoiceStatus("idle");
       }
-
-      setVoiceStatus('idle');
-    } catch (error) {
-      console.error('Error getting driver response:', error);
-      toast.error('Failed to get driver response');
-      setVoiceStatus('idle');
-    }
-  }, [currentLocation, conversationHistory, revealedHints, npcVoiceEnabled]);
+    },
+    [currentLocation, conversationHistory, revealedHints, npcVoiceEnabled]
+  );
 
   const playDriverVoice = async (text: string) => {
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
+      const response = await fetch("/api/tts", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           input: text,
-          languageCodes: currentLocation?.driverLanguages || ['EN']
+          languageCodes: currentLocation?.driverLanguages || ["EN"],
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate speech');
+        throw new Error("Failed to generate speech");
       }
 
       const audioBlob = await response.blob();
@@ -870,28 +1006,33 @@ export default function App() {
 
       await audio.play();
     } catch (error) {
-      console.error('Error playing driver voice:', error);
+      console.error("Error playing driver voice:", error);
       setIsPlayingAudio(false);
     }
   };
 
-  const { isRecording: isVoiceRecording, isProcessing, startRecording, stopRecording } = useVoiceRecording({
+  const {
+    isRecording: isVoiceRecording,
+    isProcessing,
+    startRecording,
+    stopRecording,
+  } = useVoiceRecording({
     onTranscriptionComplete: handleTranscriptionComplete,
     onError: (error) => {
       toast.error(error);
-      setVoiceStatus('idle');
-    }
+      setVoiceStatus("idle");
+    },
   });
 
   const handleVoiceStart = () => {
-    setVoiceStatus('listening');
+    setVoiceStatus("listening");
     setIsChatPanelOpen(true);
     startRecording();
   };
 
   const handleVoiceStop = () => {
     stopRecording();
-    setVoiceStatus('processing');
+    setVoiceStatus("processing");
   };
 
   const handleSendTextMessage = async (message: string) => {
@@ -905,10 +1046,10 @@ export default function App() {
 
   const handleReplayAudio = () => {
     if (!activeDialogue) return;
-    
+
     setIsPlayingAudio(true);
-    console.log('Replaying driver audio...');
-    
+    console.log("Replaying driver audio...");
+
     // Simulate audio playback
     setTimeout(() => {
       setIsPlayingAudio(false);
@@ -918,7 +1059,7 @@ export default function App() {
   // NEW: Explicit hint request handler with progressive hints
   const handleRequestHint = () => {
     const nextHintNumber = revealedHints.size + 1;
-    
+
     if (nextHintNumber > 3) {
       // No more hints available (max 3 hints)
       return;
@@ -933,56 +1074,56 @@ export default function App() {
     } else {
       hintData = currentLocation.progressiveHints.hint3;
     }
-    
+
     // Add hint request message from player
     const playerMessage: ChatMessage = {
       id: `player-hint-${Date.now()}`,
-      speaker: 'player',
-      text: "Can you give me a hint?"
+      speaker: "player",
+      text: "Can you give me a hint?",
     };
-    
+
     // Add driver response with progressive hint
     const driverMessage: ChatMessage = {
       id: `hint-${nextHintNumber}`,
-      speaker: 'driver',
+      speaker: "driver",
       text: hintData.text,
       romanization: hintData.romanization,
       translation: hintData.translation,
-      color: currentLocation.characters[0]?.color || '#10b981',
+      color: currentLocation.characters[0]?.color || "#10b981",
       characterId: `hint-${nextHintNumber}`,
-      translationRevealed: false
+      translationRevealed: false,
     };
-    
-    setConversationHistory(prev => [...prev, playerMessage, driverMessage]);
-    
+
+    setConversationHistory((prev) => [...prev, playerMessage, driverMessage]);
+
     // Track hint usage
-    setRevealedHints(prev => new Set([...prev, `hint-${nextHintNumber}`]));
+    setRevealedHints((prev) => new Set([...prev, `hint-${nextHintNumber}`]));
 
     // Show toast
     toast(`Hint requested (-100 points)`, {
-      icon: '💡',
+      icon: "💡",
       duration: 3000,
     });
-    
+
     setIsChatPanelOpen(true);
   };
 
   const handleNext = () => {
     // Transition from result overlay to summary screen
-    setVisitedLocations(prev => [...prev, currentLocation.name]);
-    setGameState('summary');
+    setVisitedLocations((prev) => [...prev, currentLocation.name]);
+    setGameState("summary");
     setReviewMode(false); // Exit review mode when going to summary
   };
 
   const handleReviewRound = () => {
     // Enter review mode - switch to playing state but disable guessing
-    setGameState('playing');
+    setGameState("playing");
     setReviewMode(true);
   };
 
   const handleBackToSummary = () => {
     // Return from review mode to summary
-    setGameState('summary');
+    setGameState("summary");
     setReviewMode(false);
   };
 
@@ -995,14 +1136,14 @@ export default function App() {
   const handleContinueFromSummary = async () => {
     if (currentRound < totalRounds - 1) {
       // Determine difficulty based on round progression
-      let difficulty: 'Easy' | 'Medium' | 'Hard' = 'Medium';
-      if (currentRound < 2) difficulty = 'Easy';
-      else if (currentRound >= 4) difficulty = 'Hard';
+      let difficulty: "Easy" | "Medium" | "Hard" = "Medium";
+      if (currentRound < 2) difficulty = "Easy";
+      else if (currentRound >= 4) difficulty = "Hard";
 
       // Generate next scenario before advancing
       await generateNewScenario(difficulty);
 
-      setCurrentRound(prev => prev + 1);
+      setCurrentRound((prev) => prev + 1);
       setRevealedHints(new Set());
       setRevealedTranslations(new Set());
       setActiveDialogue(null);
@@ -1011,7 +1152,7 @@ export default function App() {
       setReviewMode(false);
 
       // Skip intro and go directly to playing with setup
-      setGameState('playing');
+      setGameState("playing");
       setCompassHeading(Math.floor(Math.random() * 360));
       setConversationCount(0);
       setWrongGuessCount(0);
@@ -1023,17 +1164,17 @@ export default function App() {
         if (nextLocation) {
           const openingMessage: ChatMessage = {
             id: Date.now().toString(),
-            speaker: 'driver',
+            speaker: "driver",
             text: nextLocation.openingLine,
             translation: nextLocation.openingLineTranslation,
-            color: nextLocation.characters[0]?.color || '#10b981'
+            color: nextLocation.characters[0]?.color || "#10b981",
           };
           setConversationHistory([openingMessage]);
         }
       }, 0);
     } else {
       // Game over, return to menu
-      setScreen('menu');
+      setScreen("menu");
       setCurrentRound(0);
       setTotalPoints(0);
       setRevealedHints(new Set());
@@ -1041,7 +1182,7 @@ export default function App() {
       setActiveDialogue(null);
       setLastResult(null);
       setVisitedLocations([]);
-      setGameState('intro');
+      setGameState("intro");
       setConversationHistory([]);
       setIsChatPanelOpen(false);
       setConversationCount(0);
@@ -1060,7 +1201,7 @@ export default function App() {
   };
 
   const handleReturnToMenu = () => {
-    setScreen('menu');
+    setScreen("menu");
     setCurrentRound(0);
     setTotalPoints(0);
     setRevealedHints(new Set());
@@ -1068,53 +1209,52 @@ export default function App() {
     setActiveDialogue(null);
     setLastResult(null);
     setVisitedLocations([]);
-    setGameState('intro');
+    setGameState("intro");
     setConversationHistory([]);
     setIsChatPanelOpen(false);
     setReviewMode(false);
   };
 
   // Menu Navigation
-  if (screen === 'menu') {
+  if (screen === "menu") {
     return (
       <MainMenu
         onPlay={handleStartGame}
-        onHowToPlay={() => setScreen('howToPlay')}
-        onSettings={() => setScreen('settings')}
+        onHowToPlay={() => setScreen("howToPlay")}
       />
     );
   }
 
-  if (screen === 'howToPlay') {
+  if (screen === "howToPlay") {
     return (
       <HowToPlay
-        onBack={() => setScreen('menu')}
+        onBack={() => setScreen("menu")}
         onStartGame={handleStartGame}
       />
     );
   }
 
-  if (screen === 'settings') {
-    return <Settings onBack={() => setScreen('menu')} />;
-  }
-
   // Game Screen
-  if (screen === 'game') {
+  if (screen === "game") {
     // Show loading screen while generating scenario
     if (isLoadingScenario || !currentLocation) {
       return (
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-800 to-slate-900">
           <div className="text-center space-y-4">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-yellow-400 mx-auto"></div>
-            <h2 className="text-2xl font-bold text-white">Generating Your Next Adventure...</h2>
-            <p className="text-slate-300">Our AI is creating a unique scenario just for you</p>
+            <h2 className="text-2xl font-bold text-white">
+              Generating Your Next Adventure...
+            </h2>
+            <p className="text-slate-300">
+              Our AI is creating a unique scenario just for you
+            </p>
           </div>
         </div>
       );
     }
 
     // Show Round Intro before playing
-    if (gameState === 'intro') {
+    if (gameState === "intro") {
       return (
         <RoundIntro
           roundNumber={currentRound + 1}
@@ -1170,10 +1310,13 @@ export default function App() {
                   driverLanguages={currentLocation.driverLanguages}
                   voiceEnabled={npcVoiceEnabled}
                   driverState={
-                    voiceStatus === 'replying' ? 'talking' 
-                    : voiceStatus === 'processing' ? 'processing'
-                    : voiceStatus === 'listening' ? 'listening'
-                    : 'idle'
+                    voiceStatus === "replying"
+                      ? "talking"
+                      : voiceStatus === "processing"
+                      ? "processing"
+                      : voiceStatus === "listening"
+                      ? "listening"
+                      : "idle"
                   }
                   onVoiceStart={handleVoiceStart}
                   onVoiceStop={handleVoiceStop}
@@ -1206,13 +1349,12 @@ export default function App() {
               </div>
             </div>
           </div>
-
         </div>
 
         {lastResult && (
           <>
             <ResultDialog
-              open={gameState === 'result'}
+              open={gameState === "result"}
               correct={lastResult.correct}
               correctAnswer={currentLocation.name}
               pointsEarned={lastResult.pointsEarned}
@@ -1227,9 +1369,9 @@ export default function App() {
               translationsUsed={revealedTranslations.size}
               wrongGuessCount={wrongGuessCount}
             />
-            
+
             <RideSummary
-              open={gameState === 'summary'}
+              open={gameState === "summary"}
               wasCorrect={lastResult.correct}
               locationName={currentLocation.name}
               pointsEarned={lastResult.pointsEarned}
@@ -1256,10 +1398,15 @@ export default function App() {
               </AlertDialogTitle>
               <AlertDialogDescription asChild>
                 <div className="text-slate-300">
-                  <p>Are you sure you want to quit? Your current progress will be lost, including:</p>
+                  <p>
+                    Are you sure you want to quit? Your current progress will be
+                    lost, including:
+                  </p>
                   <ul className="list-disc list-inside mt-2 space-y-1 text-slate-400">
                     <li>Current points: {totalPoints}</li>
-                    <li>Round progress: {currentRound + 1} of {totalRounds}</li>
+                    <li>
+                      Round progress: {currentRound + 1} of {totalRounds}
+                    </li>
                     <li>Conversation history</li>
                   </ul>
                 </div>
@@ -1278,7 +1425,7 @@ export default function App() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        
+
         {/* Toast notifications */}
         <Toaster richColors closeButton />
       </>

@@ -13,10 +13,9 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 interface MainMenuProps {
   onPlay: () => void;
   onHowToPlay: () => void;
-  onSettings: () => void;
 }
 
-export function MainMenu({ onPlay, onHowToPlay, onSettings }: MainMenuProps) {
+export function MainMenu({ onPlay, onHowToPlay }: MainMenuProps) {
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Background with Overlay */}
@@ -91,7 +90,6 @@ export function MainMenu({ onPlay, onHowToPlay, onSettings }: MainMenuProps) {
           </Button>
 
           <Button
-            onClick={onSettings}
             size="lg"
             variant="secondary"
             className="h-14 text-lg bg-[#1E2329] hover:bg-[#2A2F38] text-[#F5F5F5] border-2 border-[#4BA3FF]/30 shadow-xl transform transition-all hover:scale-105"
