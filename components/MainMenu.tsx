@@ -55,12 +55,9 @@ export function MainMenu({ onPlay, onHowToPlay }: MainMenuProps) {
             </div>
           </div>
 
-          <h1 className="text-6xl md:text-7xl text-[#F5F5F5] mb-4 drop-shadow-2xl tracking-tight">
-            Where in the World
+          <h1 className="text-6xl md:text-7xl text-[#FFC832] mb-4 drop-shadow-2xl tracking-tight">
+            Lost in Transportation
           </h1>
-          <h2 className="text-5xl md:text-6xl text-[#FFC832] mb-6 drop-shadow-2xl tracking-tight">
-            Am I?
-          </h2>
 
           <p className="text-xl text-[#F5F5F5]/90 drop-shadow-lg max-w-2xl mx-auto">
             Wake up, shake off the hangover, chat with your taxi driver and

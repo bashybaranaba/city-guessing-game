@@ -1,14 +1,14 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
 interface GuessDialogProps {
   open: boolean;
@@ -17,12 +17,12 @@ interface GuessDialogProps {
 }
 
 export function GuessDialog({ open, onClose, onSubmit }: GuessDialogProps) {
-  const [guess, setGuess] = useState('');
+  const [guess, setGuess] = useState("");
 
   const handleSubmit = () => {
     if (guess.trim()) {
       onSubmit(guess.trim());
-      setGuess('');
+      setGuess("");
     }
   };
 
@@ -30,7 +30,7 @@ export function GuessDialog({ open, onClose, onSubmit }: GuessDialogProps) {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Where in the World Are You?</DialogTitle>
+          <DialogTitle>Lost in Transportation?</DialogTitle>
           <DialogDescription>
             Based on the hints you've gathered, guess the location!
           </DialogDescription>
@@ -43,7 +43,7 @@ export function GuessDialog({ open, onClose, onSubmit }: GuessDialogProps) {
               placeholder="e.g., Paris, France"
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             />
           </div>
           <div className="flex gap-2">
